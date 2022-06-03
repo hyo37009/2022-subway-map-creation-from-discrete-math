@@ -82,7 +82,7 @@ def subwaySearch(st, end):
     #시작역과 도착역의 라인이 다른 경우
     #다중노선 경로를 추적합니다.
         else:
-            route.append(recruSearch(st, end))
+            route += recruSearch(st, end)
             # nowroute = []
             # nowstat = st
             # nowline = retLineClass(st.printline())
@@ -103,58 +103,90 @@ def subwaySearch(st, end):
 
     for i in route:
         for j in i:
-            print(j)
+            print(f'{j}({" ".join(j.line)})', end=' ')
+        print()
 
 
-def recruSearch(st, end):
+def recruSearch(st, end, visitedLines=[]):
     #node의 맨 첫번째에 st역을 넣습니다.
     try:
-        len(node)
+        len(nodes)
     except:
-        node = []
-        visitedLines = []
+        nodes = []
 
     #모든 경우의 수를 확인합니다
     for stline in st.line:
-        stline = retLineClass(stline)
-        for endline in end.line:
-            endline = retLineClass(endline)
+        if stline not in visitedLines:
+            stline = retLineClass(stline)
+            for endline in end.line:
+                endline = retLineClass(endline)
+                break
             break
-        break
+        return nodes
 
+    # while True:
     # 두 역이 같은 라인인 경우 검색 종료
-    if stline.linename == endline.linename:
-        node.append([st, end])
-        return node
+    if stline == endline:
+        nodes.append([st, end])
+        return nodes
+
 
     # node 개수가 홀수인 경우 가운데 역
+    # 모든 경우의 수를 검사
     nownodes = [st]
     hwanline = st.line.union(end.line)
+    distance = float('inf')
     for nowstat in hwanlist:
         if len(set(hwanline) & nowstat.line) >= 2:
-            #가운데 역을 찾은 경우 경로를 모두 찾은 것이므로 return
+            #가운데 역을 찾은 경우 중 거리가 가장 작은 것 만을 저장
+            #거리가 가장 작은지 검사합니다.
+            sthwanline = st.line & nowstat.line
+            for i in sthwanline:
+                i = retLineClass(i)
+                temst = i.stInLine(st)
+                temend = i.stInLine(nowstat)
+                nowdistance = i.howfar(temst, temend)
+            endhwanline = end.line & nowstat.line
+            for i in endhwanline:
+                i = retLineClass(i)
+                temst = i.stInLine(nowstat)
+                temend = i.stInLine(end)
+                nowdistance += i.howfar(temst, temend)
+
+            if nowdistance > distance:
+                continue
+
+            distance = nowdistance
             nownodes.append(nowstat)
-            visitedLines.append(hwanline.linename)
-            break
-    nownodes.append(end)
-    node.append(nownodes)
+            visitedLines.append(nowstat.line)
+            nownodes.append(end)
+            nodes.append(nownodes)
 
 
 
 
-    #node개수가 짝수인 경우 재탐색
-    nownodes = [st]
-    for hwan in hwanlist:
-        if stline.linename in hwan.line:
-            nextst = hwan
-        elif endline.linename in hwan.line:
-            nextend = hwan
-    nownodes.append(nextst)
-    recruSearch(nextst, nextend)
-    nownodes.append(nextend)
-    nownodes.append(end)
-    node.append(nownodes)
-    return node
+
+    # #node개수가 짝수인 경우 재탐색
+    # nownodes = [st]
+    # visitedLines = [stline, endline]
+    # for hwanst in hwanlist:
+    #     if hwanst.line in visitedLines:
+    #         continue
+    #     if stline.linename in hwanst.line:
+    #         visitedLines.append(stline.linename)
+    #         nextst = hwanst
+    #     elif endline.linename in hwanst.line:
+    #         try:
+    #             nextend.stname
+    #         except:
+    #             visitedLines.append(endline.linename)
+    #             nextend = hwanst
+    # nownodes.append(nextst)
+    # recruSearch(nextst, nextend, visitedLines)
+    # nownodes += [nextend, end]
+    # nodes.append(nownodes)
+    #
+    return nodes
 
 
 
