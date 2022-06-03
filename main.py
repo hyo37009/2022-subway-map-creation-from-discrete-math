@@ -35,13 +35,13 @@ class line:
                                     역이 존재하지 않으면 False를 반환한다.
 '''
 
+
 def subwaySearch(st, end):
     for i in range(len(lines)):
         for j in range(len(lines[i])):
             stat = lines[i].linelist[j]
             if stat.name == st:
                 st = stat
-
 
     for i in range(len(lines)):
         for j in range(len(lines[i])):
@@ -52,69 +52,24 @@ def subwaySearch(st, end):
     print('지하철 노선 검색을 시작합니다.')
     print(f'출발역 : {st}({st.printline()}), 도착역 : {end}({end.printline()})')
 
-    #최소 거리를 탐색합니다
-    route = []
+    # 최소 거리를 탐색합니다
+    route = recruSearch(st, end)
 
-    #시작역과 도착역이 같은 라인인 경우
-    #단일라인추적
-    # for i in st.line:
-    #     if i in end.line:
-    #         nowline = retLineClass(i)
-    #         nowst = nowline.stInLine(st)
-    #         nowend = nowline.stInLine(end)
-    #         nowroute = []
-    #         nowstat = nowst
-    #
-    #         #방향 결정
-    #         distance = nowline.howfar(nowst, nowend)
-    #         if distance < 1:
-    #             derection = 1
-    #             distance *= -1
-    #         else:
-    #             derection = 0
-    #
-    #         for j in range(distance):
-    #             nowroute.append(nowstat.name)
-    #             nowstat = nowstat._neighbor[derection]
-    #         nowroute.append(nowend.name)
-    #         route.append(nowroute)
-
-    #시작역과 도착역의 라인이 다른 경우
-    #다중노선 경로를 추적합니다.
-        # else:
-    route += recruSearch(st, end)
-            # nowroute = []
-            # nowstat = st
-            # nowline = retLineClass(st.printline())
-            # for i in range(len(multiLine) - 1):
-            #     distance = nowline.howfar(multiLine[i], multiLine[i+1])
-            #     if distance < 1:
-            #         derection = 1
-            #         distance *= -1
-            #     else:
-            #         derection = 0
-            #
-            #     for j in range(distance):
-            #         nowroute.append(nowstat.name)
-            #         nowstat = nowstat._neighbor[derection]
-            # nowroute.append(end.name)
-
-
-
+    # 디버깅용 출력
     for i in route:
         for j in i:
             print(f'{j}({" ".join(j.line)})', end=' ')
-        print()
+        print(f'거리 : {finaldistance(i)}')
 
 
 def recruSearch(st, end, visitedLines=[]):
-    #node의 맨 첫번째에 st역을 넣습니다.
+    # node의 맨 첫번째에 st역을 넣습니다.
     try:
         len(nodes)
     except:
         nodes = []
 
-    #모든 경우의 수를 확인합니다
+    # 모든 경우의 수를 확인합니다
     for stline in st.line:
         if stline not in visitedLines:
             stline = retLineClass(stline)
@@ -130,16 +85,15 @@ def recruSearch(st, end, visitedLines=[]):
         nodes.append([st, end])
         return nodes
 
-
     # node 개수가 홀수인 경우 가운데 역
     # 모든 경우의 수를 검사
     nownodes = [st]
-    hwanline = st.line.union(end.line)
     distance = float('inf')
+    nowdistance = 0
     for nowstat in hwanlist:
-        if not set(hwanline) & nowstat.line:
-            #가운데 역을 찾은 경우 중 거리가 가장 작은 것 만을 저장
-            #거리가 가장 작은지 검사합니다.
+        if len(nowstat.line & st.line) >= 1 and len(nowstat.line & end.line) >= 1:
+            # 가운데 역을 찾은 경우 중 거리가 가장 작은 것 만을 저장
+            # 거리가 가장 작은지 검사합니다.
             sthwanline = st.line & nowstat.line
             for i in sthwanline:
                 i = retLineClass(i)
@@ -153,18 +107,15 @@ def recruSearch(st, end, visitedLines=[]):
                 temend = i.stInLine(end)
                 nowdistance += i.howfar(temst, temend)
 
-            if nowdistance > distance:
-                continue
+                if nowdistance > distance:
+                    continue
 
             distance = nowdistance
             nownodes.append(nowstat)
             visitedLines.append(nowstat.line)
             nownodes.append(end)
             nodes.append(nownodes)
-
-
-
-
+            nownodes = [st]
 
     # #node개수가 짝수인 경우 재탐색
     # nownodes = [st]
@@ -189,6 +140,30 @@ def recruSearch(st, end, visitedLines=[]):
     return nodes
 
 
+def finaldistance(nodes:list) -> int:
+    for i in range(len(nodes) - 1):
+        st = nodes[i]
+        end = nodes[i + 1]
+        line = list(st.line & end.line)
+        distance = 0
+
+        if len(line) >= 2:
+            nowdistance = float('inf')
+            for nowlinename in line:
+                nowline = retLineClass(nowlinename)
+                st = nowline.stInLine(st)
+                end = nowline.stInLine(end)
+                temdistance = nowline.howfar(st, end)
+                if temdistance < nowdistance:
+                    nowdistance = temdistance
+        else:
+            nowline = retLineClass(line[0])
+            st = nowline.stInLine(st)
+            end = nowline.stInLine(end)
+            nowdistance = nowline.howfar(st, end)
+
+        distance += nowdistance
+    return distance
 
 
 if __name__ == "__main__":
