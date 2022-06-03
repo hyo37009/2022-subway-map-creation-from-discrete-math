@@ -16,7 +16,8 @@ line_kong = stins[:14]
 line_bun = stins[14:27]
 line_yong = stins[27:42]
 line_kimpo = stins[42:52]
-line_incheon = stins[52:108]
+line_incheon1 = stins[52:81]
+line_incheon2 = stins[81:108]
 line_1 = stins[108:170]
 line_1_1 = stins[170:204]
 line_1_2 = stins[204]
@@ -61,4 +62,94 @@ line3.setline(line_3)
 line4 = line('4호선', len(line_4))
 line4.setline(line_4)
 
-line5 = line('5호선', )
+line5 = line('5호선', len(line_5))
+line5.setline(line_5)
+
+line6 = line('6호선', len(line_6))
+line6.setline(line_6)
+
+line7 = line('7호선', len(line_7))
+line7.setline(line_7)
+
+line8 = line('8호선', len(line_8))
+line8.setline(line_8)
+
+line9 = line('9호선', len(line_9))
+line9.setline(line_9)
+
+lineSuin = line('수인선', len(line_suin))
+lineSuin.setline(line_suin)
+
+lineKyongchun = line('경춘선', len(line_kyongchun))
+lineKyongchun.setline(line_kyongchun)
+
+lineKyongchung = line('경의중앙선', len(line_kyongchung))
+lineKyongchung.setline(line_kyongchung)
+lineKyongchung.linetree(line_kyongchung_1, '가좌')
+
+lineKyongkang = line('경강선', len(line_kyongkang))
+lineKyongkang.setline(line_kyongkang)
+
+lineDonghae = line('동해선', len(line_donghae))
+lineDonghae.setline(line_donghae)
+
+lineSeohae = line('서해선', len(line_seohae))
+lineSeohae.setline(line_seohae)
+
+lineUi = line('우이신설선', len(line_ui))
+lineUi.setline(line_ui)
+
+lineEujungbu = line('의정부경전철', len(line_eujungbu))
+lineEujungbu.setline(line_eujungbu)
+
+linekong = line('공항철도', len(line_kong))
+linekong.setline(line_kong)
+
+linebun = line('신분당선', len(line_bun))
+linebun.setline(line_bun)
+
+lineyong = line('용인에버라인', len(line_yong))
+lineyong.setline(line_yong)
+
+linekimpo = line('김포골드라인', len(line_kimpo))
+linekimpo.setline(linekimpo)
+
+lineincheon1 = line('인천1호선', len(line_incheon1))
+lineincheon1.setline(line_incheon1)
+
+lineincheon2 = line('인천2호선', len(line_incheon2))
+lineincheon2.setline(line_incheon2)
+
+
+
+
+lines = [line1, line2, line3, line4, line5, line6, line7, line8,\
+         line9, lineSuin, lineKyongchun, lineKyongchung, lineKyongkang, \
+         lineDonghae, lineUi, lineEujungbu, linekong, linebun,\
+         lineyong, linekimpo, lineincheon1, lineincheon2]
+
+
+hwanlist = []
+hwanname = []
+
+for i in range(len(lines)):
+    for j in range(len(lines[i])):
+        stat = lines[i].linelist[j]
+        if stat.hwan:
+            for k in range(len(lines)):
+                for l in range(len(lines[k])):
+                    if stat.name == lines[k].linelist[l].name:
+                        stat.line.add(lines[k].linename)
+
+            hwanname.append(stat.name)
+            if hwanname.count(stat.name) >= 2:
+                continue
+            hwanlist.append(stat)
+
+
+
+def retLineClass(line):
+    for i in lines:
+        if i.linename == line:
+            return i
+    return False
