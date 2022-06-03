@@ -57,32 +57,32 @@ def subwaySearch(st, end):
 
     #시작역과 도착역이 같은 라인인 경우
     #단일라인추적
-    for i in st.line:
-        if i in end.line:
-            nowline = retLineClass(i)
-            nowst = nowline.stInLine(st)
-            nowend = nowline.stInLine(end)
-            nowroute = []
-            nowstat = nowst
-
-            #방향 결정
-            distance = nowline.howfar(nowst, nowend)
-            if distance < 1:
-                derection = 1
-                distance *= -1
-            else:
-                derection = 0
-
-            for j in range(distance):
-                nowroute.append(nowstat.name)
-                nowstat = nowstat._neighbor[derection]
-            nowroute.append(nowend.name)
-            route.append(nowroute)
+    # for i in st.line:
+    #     if i in end.line:
+    #         nowline = retLineClass(i)
+    #         nowst = nowline.stInLine(st)
+    #         nowend = nowline.stInLine(end)
+    #         nowroute = []
+    #         nowstat = nowst
+    #
+    #         #방향 결정
+    #         distance = nowline.howfar(nowst, nowend)
+    #         if distance < 1:
+    #             derection = 1
+    #             distance *= -1
+    #         else:
+    #             derection = 0
+    #
+    #         for j in range(distance):
+    #             nowroute.append(nowstat.name)
+    #             nowstat = nowstat._neighbor[derection]
+    #         nowroute.append(nowend.name)
+    #         route.append(nowroute)
 
     #시작역과 도착역의 라인이 다른 경우
     #다중노선 경로를 추적합니다.
-        else:
-            route += recruSearch(st, end)
+        # else:
+    route += recruSearch(st, end)
             # nowroute = []
             # nowstat = st
             # nowline = retLineClass(st.printline())
@@ -126,7 +126,7 @@ def recruSearch(st, end, visitedLines=[]):
 
     # while True:
     # 두 역이 같은 라인인 경우 검색 종료
-    if stline == endline:
+    if st.line & end.line:
         nodes.append([st, end])
         return nodes
 
@@ -137,7 +137,7 @@ def recruSearch(st, end, visitedLines=[]):
     hwanline = st.line.union(end.line)
     distance = float('inf')
     for nowstat in hwanlist:
-        if len(set(hwanline) & nowstat.line) >= 2:
+        if not set(hwanline) & nowstat.line:
             #가운데 역을 찾은 경우 중 거리가 가장 작은 것 만을 저장
             #거리가 가장 작은지 검사합니다.
             sthwanline = st.line & nowstat.line
