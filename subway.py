@@ -5,20 +5,12 @@ class station:
 
     def __init__(self, name: str, line: list):
         self.name = name
-        self.line = line
-        if type(self.line) != list:
-            raise TypeError('line must be list type')
+        self.line = set(line)
         self.hwan = False
         self._neighbor = [None, None]
 
     def __str__(self):
         return self.name
-
-    def is_hwan(self):
-        '''
-        환승역인지 검사합니다
-        '''
-        return self.hwan
 
     def is_lineN(self, n: str):
         '''
@@ -47,8 +39,11 @@ class station:
         return self._neighbor[1]
 
     def printconnection(self):
-        print(self.prevStation(), self.nextStation())
-        return True
+            return str(self.prevStation(), self.nextStation())
+
+    def printline(self):
+        return ", ".join(self.line)
+
 
 
 class line:
@@ -62,6 +57,9 @@ class line:
         self.linename = linename
         self.linenum = linenum
         self.linelist = [None] * linenum
+
+    def __len__(self):
+        return self.linenum
 
     def setline(self, line:list):
         for i in range(self.linenum):
@@ -78,7 +76,7 @@ class line:
                 self.linelist[i].connection(self.linelist[i-1], 0)
 
             #환승역 여부를 저장합니다.
-            if self.linelist[i] in self.hwan:
+            if self.linelist[i].name in self.hwan:
                 self.linelist[i].hwan = True
 
     def linetree(self, line:list, connected:str):
@@ -121,3 +119,17 @@ class line:
             if self.linelist[i].name == station:
                 return self.linelist[i]
         return False
+
+    def stInLine(self, st):
+        for i in self.linelist:
+            if i.name == st.name:
+                return i
+        return False
+
+    def howfar(self, st1:station, st2:station):
+        if type(st1) != station or type(st2)!= station:
+            raise ValueError('입력값이 station이 아닙니다')
+
+        num1 = self.linelist.index(st1)
+        num2 = self.linelist.index(st2)
+        return abs(num1 - num2)

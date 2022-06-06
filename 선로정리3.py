@@ -112,7 +112,7 @@ lineyong = line('용인에버라인', len(line_yong))
 lineyong.setline(line_yong)
 
 linekimpo = line('김포골드라인', len(line_kimpo))
-linekimpo.setline(linekimpo)
+linekimpo.setline(line_kimpo)
 
 lineincheon1 = line('인천1호선', len(line_incheon1))
 lineincheon1.setline(line_incheon1)
@@ -148,8 +148,25 @@ for i in range(len(lines)):
 
 
 
+
 def retLineClass(line):
     for i in lines:
         if i.linename == line:
             return i
     return False
+
+def flatter(nodes, flattenned=False):
+    try:
+        result == 0
+    except:
+        result = []
+
+    if False in nodes:
+        return False
+    for i in nodes:
+        if type(i) == list:
+            result += flatter(i)
+            flattenned = True
+        else:
+            result.append(i)
+    return result
