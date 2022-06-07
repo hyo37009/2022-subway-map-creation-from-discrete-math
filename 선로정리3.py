@@ -77,7 +77,7 @@ line8.setline(line_8)
 line9 = line('9호선', len(line_9))
 line9.setline(line_9)
 
-lineSuin = line('수인선', len(line_suin))
+lineSuin = line('수인분당선', len(line_suin))
 lineSuin.setline(line_suin)
 
 lineKyongchun = line('경춘선', len(line_kyongchun))
@@ -89,9 +89,6 @@ lineKyongchung.linetree(line_kyongchung_1, '가좌')
 
 lineKyongkang = line('경강선', len(line_kyongkang))
 lineKyongkang.setline(line_kyongkang)
-
-lineDonghae = line('동해선', len(line_donghae))
-lineDonghae.setline(line_donghae)
 
 lineSeohae = line('서해선', len(line_seohae))
 lineSeohae.setline(line_seohae)
@@ -125,9 +122,9 @@ lineincheon2.setline(line_incheon2)
 
 lines = [line1, line2, line3, line4, line5, line6, line7, line8,\
          line9, lineSuin, lineKyongchun, lineKyongchung, lineKyongkang, \
-         lineDonghae, lineUi, lineEujungbu, linekong, linebun,\
+         lineUi, lineEujungbu, linekong, linebun,\
          lineyong, linekimpo, lineincheon1, lineincheon2]
-
+linenamelist = [i.linename for i in lines]
 
 hwanlist = []
 hwanname = []
@@ -155,18 +152,24 @@ def retLineClass(line):
             return i
     return False
 
-def flatter(nodes, flattenned=False):
+def flatter(nodes):
     try:
         result == 0
     except:
         result = []
-
-    if False in nodes:
-        return False
-    for i in nodes:
-        if type(i) == list:
-            result += flatter(i)
-            flattenned = True
-        else:
-            result.append(i)
+    if type(nodes) != station:
+        if nodes == False:
+            return False
+        for i in nodes:
+            if type(i) == list:
+                result += flatter(i)
+            else:
+                result.append(i)
     return result
+
+def retStationClass(st):
+    for i in lines:
+        result = i.stInLine(st)
+        if result:
+            return result
+    return False

@@ -1,7 +1,6 @@
 import itertools
 
-from 선로정리3 import *
-import subway
+from 선로정리3 import lines, linenamelist, hwanlist, retStationClass, retLineClass, flatter, stins
 
 '''
 변수 설명
@@ -54,11 +53,69 @@ def subwaySearch(st, end):
 
     # 최소 거리를 탐색합니다
     route = Search(st, end)
-    route2 = recruSearch(st, end)
-    return route + route2
+    route1 = []
+    for i in route:
+        if len(i) <= 4:
+            route1.append(i)
 
-def Search(st, end):
-    # node의 맨 첫번째에 st역을 넣습니다.
+    route2 = recruSearch(st, end)
+    pass
+
+    tem = []
+    tem2 = []
+    for a in route1:
+        i = 0
+        for b in range(len(a)):
+            if a[b] == st:
+                triger = a[-2]
+                if a.count(a[-2]) < a.count(a[-3]):
+                    triger = a[-3]
+            elif a[b] == end:
+                if triger == a[-3]:
+                    tem2.pop()
+                break
+
+            if a[b] == triger:
+                tem.append(st)
+                tem += a[i+1:b+1]
+                tem.append(end)
+                tem2.append(tem)
+                tem = []
+                i = b
+
+    tem = []
+    for a in route2:
+        i = 1
+        outer = []
+        inner = []
+        now = []
+        triger = a[1]
+        trigercount = 0
+        for b in range(len(a)):
+            if triger in a[b:]:
+                if triger == a[b]:
+                    now.append(a[i:b])
+                    i = b
+                continue
+            else:
+                triger = a[b]
+                outer.append(now)
+                outer = []
+
+
+
+    pass
+
+    for a in tem2:
+        for b in a:
+            if a.count(b) >= 2:
+                tem2.remove(a)
+                break
+    return tem2
+
+def Search(st, end, flag=False, visitedst = []):
+    if flag == True:
+        return False
     try:
         len(nodes)
     except:
@@ -75,6 +132,8 @@ def Search(st, end):
     distance = float('inf')
     nowdistance = 0
     for nowstat in hwanlist:
+        if nowstat in visitedst:
+            continue
         if len(nowstat.line & st.line) >= 1 and len(nowstat.line & end.line) >= 1:
             # 가운데 역을 찾은 경우 중 거리가 가장 작은 것 만을 저장
             # 거리가 가장 작은지 검사합니다.
@@ -101,53 +160,71 @@ def Search(st, end):
             nownodes = [st]
 
     if not nodes:               #위 두가지 모두 안 되는 경우
-        nodes.append(recruSearch(st, end))    #재귀탐색 실행
+        nodes.append(recruSearch(st, end, flag, visitedst=visitedst))    #재귀탐색 실행
 
     return nodes
 
 
 
 
-def recruSearch(st, end, visitedLines=[]):      #다중탐색
+def recruSearch(st, end, flag=False, visitedLines=[], visitedst=[]):      #다중탐색
+    if flag == True:
+        return False
     nodes = []
     # 무한 반복을 피하기 위해 이미 탄 라인은 다시 타지 않음
     for hwanst in hwanlist:
         if st.line & hwanst.line :                  # st역의 환승역을 찾은 경우
+            pass
             for i in list(st.line & hwanst.line):   # 겹치는 노선이 여러개일 경우를 대비해 각 노선 전부 검사
                 newst = hwanst                      # 다음 st 인자로 환승역을 주기 위해 저장
-                if i in visitedLines:               # 지금 검사하는 노선이 이미 탄 라인인 경우
-                    return False                # 무한반복을 방지하기 위해 빠져나오고 검사가 실패했으니 False를 저장
+                if newst.name in visitedst:
+                    flag = True                     # 무한반복을 방지하기 위해 빠져나오고 검사가 실패했으니 False를 저장
                 visitedLines.append(i)              # 탑승 노선 저장
+                visitedst.append(newst.name)
 
                 for endhwanst in hwanlist:
                     if end.line & endhwanst.line:                   # end의 환승역을 찾은 경우
+                        pass
                         for j in list(end.line & endhwanst.line):   # 겹치는 노선이 여러개일 경우 각 노선 전부 검사
                             newend = endhwanst                      # 다음 end 인자로 주기 위해 저장
-                            if j in visitedLines:                   # 이미 방문한 노선인 경우 검색 실패
-                                return False
+                            if newend.name in visitedst:                   # 이미 방문한 노선인 경우 검색 실패
+                                flag = True
                             visitedLines.append(j)
+                            visitedst.append(newend.name)
                             nownodes = []                     # 탑승 노선 저장
-                            newnodes = Search(newst, newend)    # 새로운 st, end를 이용해 재귀탐색
+                            newnodes = flatter(Search(newst, newend, flag, visitedst))    # 새로운 st, end를 이용해 재귀탐색
+                            pass
+                            if newnodes is False:
+                                flag = True
 
-
-                            for nnodes in newnodes:             # 탐색에 실패한 경우 저장하지 않음
-                                nnodes = flatter(nnodes)
-                                if False in nnodes:
-                                    continue
-                                nownodes += nnodes
+                            if newnodes:
+                                for nnodes in newnodes:             # 탐색에 실패한 경우 저장하지 않음
+                                    nnodes = flatter(nnodes)
+                                    if nnodes == False or False in nnodes:
+                                        flag = True
+                                    nownodes += nnodes
                             visitedLines.remove(j)
+                            visitedst.remove(newend.name)
 
-
-                            appendlist = [st]
-                            appendlist += nnodes
+                            if flag == True:
+                                break
+                            appendlist = []
+                            appendlist.append(st)
+                            appendlist += newnodes
                             appendlist.append(end)
+                            if len(appendlist) >100:
+                                return nodes
                             nodes.append(appendlist)
 
 
-
-
                 visitedLines.remove(i)
-    return nodes
+                visitedst.remove(newst.name)
+                if flag == True:
+                    break
+            if flag == True:
+                break
+        if flag == True:
+            break
 
 
 
@@ -173,13 +250,13 @@ def recruSearch(st, end, visitedLines=[]):      #다중탐색
 
 def finaldistance(nodes:list) -> int:
     distance = 0
+
     for i in range(len(nodes) - 1):
         st = nodes[i]
         end = nodes[i + 1]
         line = list(st.line & end.line)
-
-        if len(line) >= 2:
-            nowdistance = float('inf')
+        nowdistance = float('inf')
+        if len(line) >= 2:      # 겹치는 노선이 여러개일 경우 더 짧은 경로를 선택
             for nowlinename in line:
                 nowline = retLineClass(nowlinename)
                 st = nowline.stInLine(st)
@@ -197,90 +274,136 @@ def finaldistance(nodes:list) -> int:
     return distance
 
 
+def printsearch(mode, stlist, specialline = None):
+
+
+    allRoute = []
+    distance = float('inf')
+    for i in range(0, len(stlist)-1):
+        try:
+            allRoute = subwaySearch(stlist[i], stlist[i+1])
+            pass
+        except:
+            continue
+
+    finalRoute = []
+    for routes in allRoute:
+        if mode != '1':
+            temlists = set()
+            for i in routes:
+                temlists.add(i.line)
+            if mode == '2':
+                if specialline not in temlists:
+                    allRoute.remove(routes)
+            if mode == '3':
+                if specialline in temlists:
+                    allRoute.remove(routes)
+
+    for routes in allRoute:
+        nowdistance = finaldistance(routes)
+        if nowdistance < distance:
+            finalRoute = routes
+            distance = nowdistance
+
+
+    return finalRoute, distance
+
 if __name__ == "__main__":
 
     while True:
         start = input('출발 역을 입력하세요:')
         if start in stins:
+            start = retStationClass(start)
             break
         print('역 이름을 정확하게 다시 입력해주세요.')
 
     while True:
         end = input('도착 역을 입력하세요:')
         if end in stins:
+            end = retStationClass(end)
             break
         print('역 이름을 정확하게 다시 입력해주세요.')
 
     throughstList = [start]
     through = input('경유역이 있다면 1, 아니라면 2를 입력해주세요:')
-    while True:
-        throughstList.append(input('역 이름을 입력해주세요:'))
-        through = input('경유역이 더 있다면 1, 아니라면 2를 입력해주세요.')
+    while through not in ['1', '2']:
+        if through not in ['1', '2']:
+            through = input('다시 입력해주세요.')
+    while through == '1':
+        while True:
+            while True:
+                temst = input('경유 역을 입력하세요:')
+                if temst in stins:
+                    throughstList.append(retStationClass(temst))
+                    break
+                print('역 이름을 정확하게 다시 입력해주세요.')
+            through = input('경유역이 더 있다면 1, 아니라면 2를 입력해주세요.')
+            if through != '1':
+                break
+        if through not in ['1', '2']:
+            through = input('다시 입력해주세요.')
     throughstList.append(end)
     print("=================================")
-    print(f'출발역 : {st}({st.printline()}), 도착역 : {end}({end.printline()})')
-    if throughstList:
-        print(f'경유역 : {" ".join(throughstList)}')
+    print(f'출발역 : {start}({start.printline()}), 도착역 : {end}({end.printline()})')
+    if through == '1':
+        print(f'경유역 : {(lambda i: i for i in through[1:-1])}')
 
     print('모드를 선택해주세요')
     print('1. 일반 모드')
     print('2. 선호 노선 모드 - 선호하는 노선이 포함된 경로를 검색합니다.')
     print('3. 기피 노선 모드 - 기피하는 노선이 없는 경로를 검색합니다.')
-    mode = input('숫자 입력 >>')
-    while mode not in range(1, 4):
+    mode =  input('숫자 입력 >>')
+    while mode not in ['1', '2', '3']:
         print('잘못 입력하셨습니다. ')
         mode = input('숫자 입력 >>')
+    specialline = None
+    if mode in ['2', '3']:
+        print("=================================")
+        while True:
+            if mode == '2':
+                specialline = input('선호하는 노선을 입력해주세요:')
+            else:
+                specialline = input('기피하는 노선을 입력해주세요:')
+            if specialline in linenamelist:
+                break
+            print('노선 이름을 정확하게 다시 입력해주세요.')
+        if mode == '2':
+            print(f'{specialline}을 포함하는 경로를 검색합니다.')
+        else:
+            print(f'{specialline}을 포함하지 않는 경로를 검색합니다.')
     print("=================================")
     print('지하철 노선 검색을 시작합니다.')
     modelist = [None, '일반 모드', '선호 노선 모드', '기피 노선 모드']
-    print(f'모드 : {modelist[mode]}')
-    printsearch(mode, throughstList, specialline)
+    print(f'모드 : {modelist[int(mode)]}')
+
+    route = []
+    distance = []
+    for i in range(len(throughstList)-1): # 경유역까지의 노선을 검색하기 위해
+        nowroute, nowdistance = printsearch(mode, [throughstList[i], throughstList[i+1]], specialline)
+        pass
+        if nowroute:
+            route += nowroute[:-1]
+            distance.append(finaldistance(route))
+            pass
+            route.append(end)
+    print("=================================")
+    print("검색이 완료되었습니다.")
+    print('경로를 츨력합니다.')
+
+    kyonst = [i.name for i in throughstList[1:-1]]
 
 
-def printsearch(mode,stlist, specialline = None):
+    print(f"{'출발역'} : {route[0].name:10}")
+    print(f'          |  ')
+    for i in range(len(route[1:])):
+        if route[i+1].name in kyonst:
+            print(f'{"경유역":3} : {route[i+1].name:10}')
+            print(f'          |  ')
+            continue
+        if route[i+1] != end:
+            print(f'{"환승역":3} : {route[i+1].name:10}')
+            print(f'          |  ')
+    print(f"도착역 : {route[-1].name:10}")
 
-    allDistance = []
-    allRoute = []
-    for i in range(1, len(stlist)):
-        allRoute = subwaySearch(stlist[i-1], stlist[i])
-    for i in allRoute:
-        allDistance.append(finaldistance(i))
-
-    distance = float('inf')
-    if mode == 1:           #일반검색
-        for i in allRoute:
-            finalRoute = allDistance.index(min(allDistance))
-            finalDistance = min(allDistance)
-    elif mode == 2:         #선호 노선 검색
-        for i in allRoute:
-            nowdistance = finaldistance(i)
-            for j in range(len(i)):
-                if j == range(len(i)):
-                    print(f'{[specialline]}를 포함하는 노선이 없습니다.')
-                    print('종료합니다.')
-                    return False
-                if specialline in i[j].line:
-                    if distance > nowdistance:
-                        distance = nowdistance
-                        nowroute = i
-        finalRoute = i
-        finalDistance = distance
-
-    elif mode == 3:
-        for i in allRoute:
-            nowdistance = finaldistance(i)
-            for j in range(len(i)):
-                if j == range(len(i)):
-                    print(f'{[specialline]}를 포함하지 않는 노선이 없습니다.')
-                    print('종료합니다.')
-                    return False
-                if specialline not in i[j].line:
-                    if distance > nowdistance:
-                        distance = nowdistance
-                        nowroute = i
-        finalRoute = i
-        finalDistance = distance
-
-    print()
 
 

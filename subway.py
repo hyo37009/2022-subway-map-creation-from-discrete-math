@@ -121,8 +121,13 @@ class line:
         return False
 
     def stInLine(self, st):
+        try:
+            st = st.name
+        except:
+            pass
+
         for i in self.linelist:
-            if i.name == st.name:
+            if i.name == st:
                 return i
         return False
 
