@@ -1,4 +1,5 @@
 import itertools
+from math import factorial
 
 from 선로정리3 import lines, linenamelist, hwanlist, retStationClass, retLineClass, flatter, stins
 
@@ -52,65 +53,77 @@ def subwaySearch(st, end):
 
 
     # 최소 거리를 탐색합니다
-    route = Search(st, end)
-    route1 = []
-    for i in route:
-        if len(i) <= 4:
-            route1.append(i)
-
+    # route = Search(st, end)
     route2 = recruSearch(st, end)
-    pass
+
 
     tem = []
     tem2 = []
-    for a in route1:
-        i = 0
-        for b in range(len(a)):
-            if a[b] == st:
-                triger = a[-2]
-                if a.count(a[-2]) < a.count(a[-3]):
-                    triger = a[-3]
-            elif a[b] == end:
-                if triger == a[-3]:
-                    tem2.pop()
-                break
 
-            if a[b] == triger:
-                tem.append(st)
-                tem += a[i+1:b+1]
-                tem.append(end)
-                tem2.append(tem)
-                tem = []
-                i = b
-
-    tem = []
     for a in route2:
         i = 1
-        outer = []
-        inner = []
+        prev = []
+        after = []
         now = []
         triger = a[1]
-        trigercount = 0
-        for b in range(len(a)):
+        last = a[-2]
+        here = 0
+        for b in range(1, len(a)-1):
             if triger in a[b:]:
                 if triger == a[b]:
-                    now.append(a[i:b])
+                    if (last != st) and (a[b:].count(last) <= 1): # 마지막
+                        if last == a[-2]:
+                            now.append(a[b:-1])
+                        else:
+                            num = b
+                            while a[num] != last:
+                                num += 1
+                            num -= 1
+                            b = num
+                            if last == a[-3]:
+                                after = a[num:-1]
+                        after.append(end)
+                        pass
+
+                    if prev:
+                        now.append(prev + a[i:b])
+                        here = now.index(now[-1])
+                    if not prev:
+                        now.append(a[i:b])
+                        if not now[-1]:
+                            now.pop()
                     i = b
-                continue
+                    last = a[b-1]
+
+                    if after:
+                        break
             else:
                 triger = a[b]
-                outer.append(now)
-                outer = []
-
-
+                prev = a[i:b]
+                i = b
+            if after:
+                break
+        if after:
+            if now:
+                for k in range(here, len(now)):
+                        now[k].insert(0, st)
+                        now[k] += after[:]
+                        tem2.append(now[k])
+            else:
+                temnow = after[:]
+                temnow.insert(0, st)
+                tem2.append(temnow)
+            pass
+        pass
 
     pass
 
-    for a in tem2:
-        for b in a:
-            if a.count(b) >= 2:
-                tem2.remove(a)
-                break
+    # for a in range(len(tem2)):
+    #     for b in tem2[a]:
+    #         if tem2[a].count(b) >= 2:
+    #             del tem2[a]
+
+
     return tem2
 
 def Search(st, end, flag=False, visitedst = []):
@@ -264,6 +277,8 @@ def finaldistance(nodes:list) -> int:
                 temdistance = nowline.howfar(st, end)
                 if temdistance < nowdistance:
                     nowdistance = temdistance
+        elif len(line) == 0:
+            return float('inf')
         else:
             nowline = retLineClass(line[0])
             st = nowline.stInLine(st)
@@ -277,29 +292,44 @@ def finaldistance(nodes:list) -> int:
 def printsearch(mode, stlist, specialline = None):
 
 
-    allRoute = []
+    route = []
+    allroute = []
     distance = float('inf')
     for i in range(0, len(stlist)-1):
-        try:
-            allRoute = subwaySearch(stlist[i], stlist[i+1])
-            pass
-        except:
-            continue
+        route = subwaySearch(stlist[i], stlist[i+1])
+
+    # lengthlist = []
+    # for i in range(len(route)):
+    #     lengthlist.append(len(route[i]))
+    # num = 1
+    # bylist = []
+    # for i in range(lengthlist):
+    #     for j in range(i-1):
+    #         num *= lengthlist[j]
+    #     bylist.append(num)
+    #     num = 1
+
+    # for i in range(len(stlist)):
+    #     for j in range(factorial()):
+
+
+
 
     finalRoute = []
-    for routes in allRoute:
+    for routes in route:
         if mode != '1':
             temlists = set()
             for i in routes:
-                temlists.add(i.line)
+                for j in list(i.line):      # 현재 경로가 거쳐가는 모든 line
+                    temlists.add(j)
             if mode == '2':
                 if specialline not in temlists:
-                    allRoute.remove(routes)
+                    route.remove(routes)
             if mode == '3':
                 if specialline in temlists:
-                    allRoute.remove(routes)
+                    route.remove(routes)
 
-    for routes in allRoute:
+    for routes in route:
         nowdistance = finaldistance(routes)
         if nowdistance < distance:
             finalRoute = routes
@@ -380,7 +410,6 @@ if __name__ == "__main__":
     distance = []
     for i in range(len(throughstList)-1): # 경유역까지의 노선을 검색하기 위해
         nowroute, nowdistance = printsearch(mode, [throughstList[i], throughstList[i+1]], specialline)
-        pass
         if nowroute:
             route += nowroute[:-1]
             distance.append(finaldistance(route))
@@ -392,18 +421,18 @@ if __name__ == "__main__":
 
     kyonst = [i.name for i in throughstList[1:-1]]
 
-
-    print(f"{'출발역'} : {route[0].name:10}")
+    print(f'길이 : {nowdistance}')
+    print(f"{'출발역'} : {route[0].name:10} ({' '.join(route[0].line)})")
     print(f'          |  ')
     for i in range(len(route[1:])):
         if route[i+1].name in kyonst:
-            print(f'{"경유역":3} : {route[i+1].name:10}')
+            print(f'{"경유역":3} : {route[i+1].name:10}({", ".join(route[i+1].line)})')
             print(f'          |  ')
             continue
         if route[i+1] != end:
-            print(f'{"환승역":3} : {route[i+1].name:10}')
+            print(f'{"환승역":3} : {route[i+1].name:10}({", ".join(route[i+1].line)})')
             print(f'          |  ')
-    print(f"도착역 : {route[-1].name:10}")
+    print(f'도착역 : {route[-1].name:10} ({", ".join(route[-1].line)})')
 
 
 
